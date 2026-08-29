@@ -2,25 +2,18 @@
 
 RiftProbe is a developer platform that discovers behavioral failures in AI agents through adaptive experimentation, not fixed test sets, and converts every confirmed failure into a permanent regression test.
 
-## Project Structure
+## Running the Demo Reset / Verification
 
+To reset the system and execute the complete end-to-end demo path (Baseline Run &rarr; Failure Discovery &rarr; Adversarial Mutation &rarr; Clustering &rarr; Permanent Regression Creation &rarr; Release Gate Flip from BLOCK to PASS):
+
+```bash
+make demo
 ```
-riftprobe/
-├── apps/
-│   ├── web/          # Next.js app, TypeScript
-│   └── api/          # FastAPI app, Python
-├── engine/
-│   ├── scenarios/    # Scenario schema, baseline generator, mutation engine
-│   ├── runner/       # Worker and agent adapters
-│   ├── evaluation/   # Deterministic evaluator + LLM judge fallback
-│   ├── mining/       # Category-based failure clustering
-│   └── regressions/  # Regression synthesis and replay
-├── demo/
-│   └── retailops/    # RetailOps simulated agent and sandbox
-├── infra/
-│   ├── docker/       # Docker configuration
-│   └── migrations/   # Database migrations
-└── README.md
+
+## Running Unit and Integration Tests
+
+```bash
+make test
 ```
 
 ## Running with Docker Compose

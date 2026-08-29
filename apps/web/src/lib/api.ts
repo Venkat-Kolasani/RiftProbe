@@ -1,0 +1,59 @@
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+export async function fetchJson(path: string, options?: RequestInit) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    headers: { "Content-Type": "application/json" },
+    ...options,
+  });
+  if (!res.ok) {
+    throw new Error(`API error ${res.status}: ${res.statusText}`);
+  }
+  return res.json();
+}
+
+export async function createRun(versionLabel: string = "v1.0") {
+  return fetchJson("/v1/runs", {
+    method: "POST",
+    body: JSON.stringify({ version_label: versionLabel }),
+  });
+}
+
+export async function getRunDetails(runId: string) {
+  return fetchJson(`/v1/runs/${runId}`);
+}
+
+export async function getRunFailures(runId: string) {
+  return fetchJson(`/v1/runs/${runId}/failures`);
+}
+
+export async function mutateFailure(failureId: string, count: number = 6, versionLabel: string = "v1.0") {
+  return fetchJson(`/v1/failures/${failureId}/mutate`, {
+    method: "POST",
+    body: JSON.stringify({ count, version_label: versionLabel }),
+  });
+}
+
+export async function createRegression(failureId: string, threshold: number = 1.0) {
+  return fetchJson("/v1/regressions", {
+    method: "POST",
+    body: JSON.stringify({ failure_id: failureId, threshold }),
+  });
+}
+
+export async function listRegressions(versionLabel: string = "v1.1") {
+  return fetchJson(`/v1/regressions?version_label=${versionLabel}`);
+}
+
+export async function replayRegression(regressionId: string, versionLabel: string = "v1.1") {
+  return fetchJson(`/v1/regressions/${regressionId}/replay`, {
+    method: "POST",
+    body: JSON.stringify({ version_label: versionLabel }),
+  });
+}
+
+export async function checkReleaseGate(versionLabel: string = "v1.0") {
+  return fetchJson("/v1/regressions/release-check", {
+    method: "POST",
+    body: JSON.stringify({ version_label: versionLabel }),
+  });
+}
