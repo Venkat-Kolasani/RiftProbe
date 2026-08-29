@@ -5,44 +5,59 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { checkReleaseGate } from "@/lib/api";
 
+function Logo() {
+  return (
+    <Link href="/" className="flex items-center gap-2.5">
+      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-orange">
+        <span className="text-sm font-bold text-white">R</span>
+      </div>
+      <span className="text-lg font-semibold text-white">RiftProbe</span>
+    </Link>
+  );
+}
+
 export function Stepper({ currentStep }: { currentStep?: number }) {
   const steps = [
-    { num: 1, label: "1. Baseline", desc: "Run 20 healthy template scenarios" },
-    { num: 2, label: "2. Discover", desc: "Hunt for authority-bypass vulnerability" },
-    { num: 3, label: "3. Variants", desc: "Generate adversarial failure cluster" },
-    { num: 4, label: "4. Regression", desc: "Freeze failure into permanent test" },
-    { num: 5, label: "5. Release Gate", desc: "Gate release: BLOCK v1.0, PASS v1.1" },
+    { num: 1, label: "Baseline" },
+    { num: 2, label: "Discover" },
+    { num: 3, label: "Variants" },
+    { num: 4, label: "Regression" },
+    { num: 5, label: "Release Gate" },
   ];
 
+  if (!currentStep) return null;
+
   return (
-    <div className="bg-slate-950 border-b border-slate-800 px-6 py-3">
-      <div className="max-w-6xl mx-auto flex justify-between items-center text-xs">
-        {steps.map((step) => {
-          const isActive = currentStep ? step.num === currentStep : false;
-          const isDone = currentStep ? step.num < currentStep : false;
+    <div className="border-b border-brand-border bg-brand-bg/80 backdrop-blur-sm">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
+        {steps.map((step, i) => {
+          const isActive = step.num === currentStep;
+          const isDone = step.num < currentStep;
           return (
-            <div key={step.num} className="flex items-center space-x-2">
-              <div
-                className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
-                  isActive
-                    ? "bg-cyan-500 text-slate-950"
-                    : isDone
-                    ? "bg-emerald-950 text-emerald-400 border border-emerald-800"
-                    : "bg-slate-800 text-slate-400 border border-slate-700"
-                }`}
-              >
-                {step.num}
-              </div>
-              <div className="hidden sm:block">
+            <div key={step.num} className="flex flex-1 items-center">
+              <div className="flex items-center gap-2">
+                <div
+                  className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold ${
+                    isActive
+                      ? "bg-brand-orange text-white"
+                      : isDone
+                      ? "border border-brand-orange/40 bg-brand-orange/10 text-brand-orange"
+                      : "border border-brand-border bg-brand-surface text-brand-muted"
+                  }`}
+                >
+                  {step.num}
+                </div>
                 <span
-                  className={`font-semibold ${
-                    isActive ? "text-cyan-400" : isDone ? "text-emerald-400" : "text-slate-400"
+                  className={`hidden text-xs font-medium sm:block ${
+                    isActive ? "text-white" : isDone ? "text-brand-orange" : "text-brand-muted"
                   }`}
                 >
                   {step.label}
                 </span>
-                <span className="text-xs text-slate-500 block">{step.desc}</span>
               </div>
+              {i < steps.length - 1 && (
+                <div className="mx-3 hidden h-px flex-1 bg-brand-border sm:block" />
+              )}
             </div>
           );
         })}
@@ -51,75 +66,69 @@ export function Stepper({ currentStep }: { currentStep?: number }) {
   );
 }
 
-export default function Navbar({ currentStep = 1 }: { currentStep?: number }) {
+export default function Navbar({
+  currentStep,
+  showStepper = true,
+}: {
+  currentStep?: number;
+  showStepper?: boolean;
+}) {
   const pathname = usePathname();
-  const [gateChip, setGateChip] = useState<{ verdict: string; version: string } | null>(null);
+  const isLanding = pathname === "/";
+  const [gateChip, setGateChip] = useState<string | null>(null);
 
   useEffect(() => {
     checkReleaseGate("v1.0")
       .then((res) => {
-        if (res && res.verdict) {
-          setGateChip({ verdict: res.verdict, version: "v1.0" });
-        }
+        if (res?.verdict) setGateChip(res.verdict);
       })
       .catch(() => {});
   }, []);
 
   const links = [
     { href: "/dashboard", label: "Dashboard" },
-    { href: "/failures", label: "Failure Explorer" },
-    { href: "/regressions", label: "Regression Center" },
+    { href: "/failures", label: "Failures" },
+    { href: "/regressions", label: "Regressions" },
   ];
 
   return (
-    <header className="sticky top-0 z-50 bg-slate-900 border-b border-slate-800">
-      <nav className="max-w-6xl mx-auto px-6 py-3.5 flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Link href="/" className="flex items-center space-x-2">
-            <span className="text-2xl font-semibold text-cyan-400">
-              RiftProbe
-            </span>
-          </Link>
-          <span className="text-xs bg-slate-800 text-slate-400 border border-slate-700 px-2 py-0.5 rounded font-mono">
-            RetailOps Demo
-          </span>
-        </div>
+    <header className="sticky top-0 z-50 border-b border-brand-border bg-brand-bg/90 backdrop-blur-md">
+      <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+        <Logo />
 
-        <div className="flex items-center space-x-6">
-          <div className="flex space-x-6">
-            {links.map((link) => {
-              const isActive = pathname === link.href;
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`text-sm font-medium transition-colors ${
-                    isActive ? "text-cyan-400 border-b-2 border-cyan-400 pb-0.5" : "text-slate-400 hover:text-slate-200"
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              );
-            })}
-          </div>
-
-          {gateChip && (
-            <div className="border-l border-slate-800 pl-4 flex items-center space-x-2">
-              <span className="text-xs text-slate-500 uppercase font-mono">Gate:</span>
-              <span
-                className={`text-xs font-bold px-2 py-0.5 rounded font-mono ${
-                  gateChip.verdict === "PASS"
-                    ? "bg-emerald-950 text-emerald-400 border border-emerald-800"
-                    : "bg-rose-950 text-rose-400 border border-rose-800"
-                }`}
-              >
-                {gateChip.verdict}
-              </span>
+        <div className="flex items-center gap-6">
+          {!isLanding && (
+            <div className="hidden items-center gap-6 md:flex">
+              {links.map((link) => {
+                const isActive = pathname === link.href || pathname.startsWith(link.href + "/");
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`text-sm transition-colors ${
+                      isActive ? "text-white" : "text-brand-muted hover:text-white"
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
             </div>
           )}
+
+          {gateChip && !isLanding && (
+            <span className={gateChip === "PASS" ? "badge-pass" : "badge-block"}>
+              Gate: {gateChip}
+            </span>
+          )}
+
+          <Link href="/dashboard" className="btn-primary text-sm">
+            Dashboard
+            <span aria-hidden>→</span>
+          </Link>
         </div>
       </nav>
-      <Stepper currentStep={currentStep} />
+      {showStepper && currentStep !== undefined && <Stepper currentStep={currentStep} />}
     </header>
   );
 }

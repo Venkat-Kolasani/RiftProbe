@@ -1,105 +1,95 @@
 "use client";
 
 import Link from "next/link";
-import Navbar, { Stepper } from "@/components/Navbar";
+import Navbar from "@/components/Navbar";
+import PageShell from "@/components/PageShell";
+
+const LOOP_STEPS = [
+  { label: "Baseline", desc: "20 healthy scenarios" },
+  { label: "Discover", desc: "Hunt policy cheats" },
+  { label: "Variants", desc: "Adversarial cluster" },
+  { label: "Regression", desc: "Permanent test" },
+  { label: "Release Gate", desc: "BLOCK → PASS" },
+];
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 font-sans flex flex-col justify-between">
-      <div>
-        <Navbar />
-        
-        <main className="max-w-4xl mx-auto p-8 space-y-8 my-auto">
-          {/* Hero */}
-          <div className="space-y-2">
-            <h1 className="text-2xl font-semibold text-cyan-400">RiftProbe</h1>
-            <p className="text-slate-200 text-sm font-medium">
-              Find how an AI agent fails. Freeze that failure as a permanent release gate.
-            </p>
-          </div>
+    <PageShell>
+      <Navbar showStepper={false} />
 
-          {/* 3-line explanation */}
-          <p className="text-sm text-slate-400 leading-relaxed">
-            RiftProbe runs a support agent (RetailOps) through normal and adversarial scenarios,
-            catches policy violations like unverified refunds, and turns each confirmed failure
-            into a regression test that blocks a broken release.
-          </p>
+      <main className="mx-auto max-w-5xl px-6 pb-24 pt-16 text-center">
+        <p className="eyebrow mb-8">
+          adaptive testing · policy invariants · release gates
+        </p>
 
-          {/* 5-step horizontal preview strip */}
-          <div className="bg-slate-950 border border-slate-800 rounded-lg p-4">
-            <span className="text-xs font-medium uppercase tracking-wide text-slate-400 block mb-3">
-              Automated Closed Loop
+        <h1 className="text-4xl font-semibold leading-tight tracking-tight text-white sm:text-5xl md:text-6xl">
+          Find how your AI agent{" "}
+          <span className="text-brand-orange">fails.</span>
+        </h1>
+
+        <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-brand-muted">
+          RiftProbe runs a support agent through normal and adversarial scenarios,
+          catches policy violations like{" "}
+          <span className="text-white">unverified refunds</span>, and turns each
+          confirmed failure into a regression test that{" "}
+          <span className="text-white">blocks a broken release</span>.
+        </p>
+
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+          <Link href="/dashboard" className="btn-primary px-8 py-3 text-base">
+            Open Dashboard
+            <span aria-hidden>→</span>
+          </Link>
+          <Link href="/failures" className="btn-secondary">
+            View Failures
+          </Link>
+        </div>
+
+        <p className="mt-6 text-xs text-brand-muted">
+          RetailOps sandbox · v1.0 vulnerable · v1.1 corrected · local demo
+        </p>
+
+        {/* Architecture diagram */}
+        <div className="card-surface mx-auto mt-20 max-w-4xl p-8 text-left shadow-glow-sm">
+          <div className="mb-8 flex justify-center">
+            <span className="badge-orange">
+              CLOSED LOOP · ADAPTIVE EXPERIMENTATION
             </span>
-            <div className="flex justify-between items-center text-xs">
-              <div className="flex items-center space-x-2">
-                <div className="w-6 h-6 rounded-full bg-slate-800 text-slate-400 border border-slate-700 flex items-center justify-center font-bold text-xs">1</div>
-                <div>
-                  <span className="font-semibold text-slate-300 block">1. Baseline</span>
-                  <span className="text-xs text-slate-500">Run 20 healthy scenarios</span>
-                </div>
-              </div>
-              <span className="text-slate-600">&rarr;</span>
-              <div className="flex items-center space-x-2">
-                <div className="w-6 h-6 rounded-full bg-slate-800 text-slate-400 border border-slate-700 flex items-center justify-center font-bold text-xs">2</div>
-                <div>
-                  <span className="font-semibold text-slate-300 block">2. Discover</span>
-                  <span className="text-xs text-slate-500">Hunt authority-bypass cheat</span>
-                </div>
-              </div>
-              <span className="text-slate-600">&rarr;</span>
-              <div className="flex items-center space-x-2">
-                <div className="w-6 h-6 rounded-full bg-slate-800 text-slate-400 border border-slate-700 flex items-center justify-center font-bold text-xs">3</div>
-                <div>
-                  <span className="font-semibold text-slate-300 block">3. Variants</span>
-                  <span className="text-xs text-slate-500">Generate adversarial cluster</span>
-                </div>
-              </div>
-              <span className="text-slate-600">&rarr;</span>
-              <div className="flex items-center space-x-2">
-                <div className="w-6 h-6 rounded-full bg-slate-800 text-slate-400 border border-slate-700 flex items-center justify-center font-bold text-xs">4</div>
-                <div>
-                  <span className="font-semibold text-slate-300 block">4. Regression</span>
-                  <span className="text-xs text-slate-500">Freeze permanent test</span>
-                </div>
-              </div>
-              <span className="text-slate-600">&rarr;</span>
-              <div className="flex items-center space-x-2">
-                <div className="w-6 h-6 rounded-full bg-slate-800 text-slate-400 border border-slate-700 flex items-center justify-center font-bold text-xs">5</div>
-                <div>
-                  <span className="font-semibold text-slate-300 block">5. Release Gate</span>
-                  <span className="text-xs text-slate-500">BLOCK v1.0, PASS v1.1</span>
-                </div>
-              </div>
-            </div>
           </div>
 
-          {/* Side by side versions */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-slate-800 border border-slate-700 p-4 rounded-lg space-y-1">
-              <span className="text-xs font-mono font-medium text-rose-400">v1.0 — Vulnerable</span>
-              <p className="text-sm text-slate-300">
-                Skips identity verification under an authority claim.
+          <div className="flex flex-col items-stretch justify-between gap-4 sm:flex-row sm:items-center">
+            {LOOP_STEPS.map((step, i) => (
+              <div key={step.label} className="flex flex-1 items-center gap-3">
+                <div className="card min-w-0 flex-1 p-4">
+                  <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg border border-brand-border bg-brand-surface text-xs font-semibold text-brand-orange">
+                    {i + 1}
+                  </div>
+                  <div className="text-sm font-medium text-white">{step.label}</div>
+                  <div className="mt-0.5 text-xs text-brand-muted">{step.desc}</div>
+                </div>
+                {i < LOOP_STEPS.length - 1 && (
+                  <span className="hidden text-brand-muted sm:block">→</span>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-8 grid gap-4 sm:grid-cols-2">
+            <div className="card border-red-900/40 bg-red-950/20 p-4">
+              <div className="text-xs font-medium text-red-400">v1.0 — Vulnerable</div>
+              <p className="mt-1 text-sm text-brand-muted">
+                Skips identity verification when user claims manager authority.
               </p>
             </div>
-            <div className="bg-slate-800 border border-slate-700 p-4 rounded-lg space-y-1">
-              <span className="text-xs font-mono font-medium text-emerald-400">v1.1 — Corrected</span>
-              <p className="text-sm text-slate-300">
-                Always enforces identity verification before refunds.
+            <div className="card border-emerald-900/40 bg-emerald-950/20 p-4">
+              <div className="text-xs font-medium text-emerald-400">v1.1 — Corrected</div>
+              <p className="mt-1 text-sm text-brand-muted">
+                Always enforces identity verification before any refund.
               </p>
             </div>
           </div>
-
-          {/* Primary CTA */}
-          <div>
-            <Link
-              href="/dashboard"
-              className="inline-block bg-cyan-600 hover:bg-cyan-500 text-white font-medium text-sm px-6 py-3 rounded-lg transition-colors"
-            >
-              Open Run Dashboard &rarr;
-            </Link>
-          </div>
-        </main>
-      </div>
-    </div>
+        </div>
+      </main>
+    </PageShell>
   );
 }

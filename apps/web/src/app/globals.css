@@ -1,3 +1,90 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    --brand-bg: #0a0a0a;
+    --brand-surface: #111111;
+    --brand-card: #141414;
+    --brand-border: #262626;
+    --brand-orange: #ff6600;
+    --brand-orange-hover: #ff7a1a;
+    --brand-text: #fafafa;
+    --brand-muted: #a3a3a3;
+  }
+
+  body {
+    @apply bg-brand-bg text-white antialiased;
+  }
+}
+
+@layer components {
+  .app-shell {
+    @apply min-h-screen relative;
+    background-color: var(--brand-bg);
+  }
+
+  .app-grid-bg {
+    background-image:
+      linear-gradient(rgba(255, 102, 0, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 102, 0, 0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+
+  .app-glow {
+    background: radial-gradient(
+      ellipse 80% 50% at 50% -10%,
+      rgba(255, 102, 0, 0.12),
+      transparent 70%
+    );
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-brand-orange px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-orange-hover;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-brand-border bg-transparent px-5 py-2.5 text-sm font-medium text-white transition-colors hover:border-neutral-500 hover:bg-white/5;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-brand-muted transition-colors hover:text-white;
+  }
+
+  .card {
+    @apply rounded-xl border border-brand-border bg-brand-card;
+  }
+
+  .card-surface {
+    @apply rounded-xl border border-brand-border bg-brand-surface;
+  }
+
+  .eyebrow {
+    @apply text-xs font-medium uppercase tracking-[0.2em] text-brand-muted;
+  }
+
+  .section-label {
+    @apply text-xs font-medium uppercase tracking-wider text-brand-muted;
+  }
+
+  .input-select {
+    @apply rounded-lg border border-brand-border bg-brand-surface px-3 py-2 text-sm text-white focus:border-brand-orange focus:outline-none;
+  }
+
+  .badge-pass {
+    @apply rounded-full border border-emerald-800/60 bg-emerald-950/80 px-2.5 py-0.5 text-xs font-medium text-emerald-400;
+  }
+
+  .badge-block {
+    @apply rounded-full border border-red-800/60 bg-red-950/80 px-2.5 py-0.5 text-xs font-medium text-red-400;
+  }
+
+  .badge-orange {
+    @apply rounded-full border border-brand-orange/30 bg-brand-orange/10 px-2.5 py-0.5 text-xs font-medium text-brand-orange;
+  }
+
+  .empty-state {
+    @apply rounded-xl border border-dashed border-brand-border p-10 text-center text-sm text-brand-muted;
+  }
+}
