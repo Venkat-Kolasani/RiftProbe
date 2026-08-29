@@ -6,8 +6,9 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from apps.api.database import get_db
-from apps.api.models import Failure, Scenario, RegressionTest, AgentVersion
+from apps.api.models import Failure, Scenario, RegressionTest, AgentVersion, ReleaseGate
 from engine.regressions.synthesizer import synthesize_regression_spec, replay_regression_test
+from engine.regressions.release_gate import evaluate_release_gate
 
 router = APIRouter(prefix="/v1/regressions", tags=["regressions"])
 
@@ -135,4 +136,47 @@ async def replay_regression_endpoint(
         "score": replay_result["score"],
         "violated_invariants": replay_result["violated_invariants"],
         "latency_ms": replay_result["latency_ms"]
+    }
+
+class ReleaseCheckRequest(BaseModel):
+    version_label: str = Field(default="v1.0", description="Agent version to evaluate release gate against")
+
+@router.post("/release-check")
+async def release_check_endpoint(
+    req: ReleaseCheckRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    stmt_v = select(AgentVersion).where(AgentVersion.label == req.version_label)
+    res_v = await db.execute(stmt_v)
+    v_obj = res_v.scalar_one_or_none()
+    if not v_obj:
+        raise HTTPException(status_code=404, detail=f"Agent version '{req.version_label}' not found")
+
+    stmt_r = select(RegressionTest)
+    res_r = await db.execute(stmt_r)
+    tests = res_r.scalars().all()
+
+    reg_list = [{"id": str(t.id), "spec": t.spec, "threshold": t.threshold} for t in tests]
+
+    gate_result = evaluate_release_gate(
+        agent_version=req.version_label,
+        regression_tests=reg_list
+    )
+
+    rg_record = ReleaseGate(
+        version_id=v_obj.id,
+        verdict=gate_result["verdict"],
+        deltas=gate_result["summary"]
+    )
+    db.add(rg_record)
+    await db.commit()
+    await db.refresh(rg_record)
+
+    return {
+        "release_gate_id": str(rg_record.id),
+        "agent_version": req.version_label,
+        "verdict": gate_result["verdict"],
+        "reason": gate_result["reason"],
+        "summary": gate_result["summary"],
+        "details": gate_result["details"]
     }
