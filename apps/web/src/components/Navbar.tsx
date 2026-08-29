@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { checkReleaseGate } from "@/lib/api";
 
-export function Stepper({ currentStep }: { currentStep: number }) {
+export function Stepper({ currentStep }: { currentStep?: number }) {
   const steps = [
     { num: 1, label: "1. Baseline", desc: "Run 20 healthy template scenarios" },
     { num: 2, label: "2. Discover", desc: "Hunt for authority-bypass vulnerability" },
@@ -18,17 +18,17 @@ export function Stepper({ currentStep }: { currentStep: number }) {
     <div className="bg-slate-950 border-b border-slate-800 px-6 py-3">
       <div className="max-w-6xl mx-auto flex justify-between items-center text-xs">
         {steps.map((step) => {
-          const isActive = step.num === currentStep;
-          const isDone = step.num < currentStep;
+          const isActive = currentStep ? step.num === currentStep : false;
+          const isDone = currentStep ? step.num < currentStep : false;
           return (
             <div key={step.num} className="flex items-center space-x-2">
               <div
                 className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
                   isActive
-                    ? "bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/50"
+                    ? "bg-cyan-500 text-slate-950"
                     : isDone
-                    ? "bg-emerald-950 text-emerald-400 border border-emerald-700"
-                    : "bg-slate-800 text-slate-500 border border-slate-700"
+                    ? "bg-emerald-950 text-emerald-400 border border-emerald-800"
+                    : "bg-slate-800 text-slate-400 border border-slate-700"
                 }`}
               >
                 {step.num}
@@ -36,12 +36,12 @@ export function Stepper({ currentStep }: { currentStep: number }) {
               <div className="hidden sm:block">
                 <span
                   className={`font-semibold ${
-                    isActive ? "text-cyan-400" : isDone ? "text-emerald-400" : "text-slate-500"
+                    isActive ? "text-cyan-400" : isDone ? "text-emerald-400" : "text-slate-400"
                   }`}
                 >
                   {step.label}
                 </span>
-                <span className="text-[10px] text-slate-500 block">{step.desc}</span>
+                <span className="text-xs text-slate-500 block">{step.desc}</span>
               </div>
             </div>
           );
@@ -66,7 +66,7 @@ export default function Navbar({ currentStep = 1 }: { currentStep?: number }) {
   }, []);
 
   const links = [
-    { href: "/", label: "Run Dashboard" },
+    { href: "/dashboard", label: "Dashboard" },
     { href: "/failures", label: "Failure Explorer" },
     { href: "/regressions", label: "Regression Center" },
   ];
@@ -76,11 +76,11 @@ export default function Navbar({ currentStep = 1 }: { currentStep?: number }) {
       <nav className="max-w-6xl mx-auto px-6 py-3.5 flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <Link href="/" className="flex items-center space-x-2">
-            <span className="text-2xl font-black bg-gradient-to-r from-cyan-400 via-sky-400 to-blue-500 bg-clip-text text-transparent">
+            <span className="text-2xl font-semibold text-cyan-400">
               RiftProbe
             </span>
           </Link>
-          <span className="text-[11px] bg-slate-800 text-slate-400 border border-slate-700 px-2 py-0.5 rounded font-mono">
+          <span className="text-xs bg-slate-800 text-slate-400 border border-slate-700 px-2 py-0.5 rounded font-mono">
             RetailOps Demo
           </span>
         </div>
@@ -105,9 +105,9 @@ export default function Navbar({ currentStep = 1 }: { currentStep?: number }) {
 
           {gateChip && (
             <div className="border-l border-slate-800 pl-4 flex items-center space-x-2">
-              <span className="text-[10px] text-slate-500 uppercase font-mono">Gate:</span>
+              <span className="text-xs text-slate-500 uppercase font-mono">Gate:</span>
               <span
-                className={`text-[10px] font-bold px-2 py-0.5 rounded font-mono ${
+                className={`text-xs font-bold px-2 py-0.5 rounded font-mono ${
                   gateChip.verdict === "PASS"
                     ? "bg-emerald-950 text-emerald-400 border border-emerald-800"
                     : "bg-rose-950 text-rose-400 border border-rose-800"

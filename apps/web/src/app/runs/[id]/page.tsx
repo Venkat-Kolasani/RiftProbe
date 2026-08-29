@@ -34,7 +34,6 @@ export default function LiveRunView() {
   useEffect(() => {
     if (!runId) return;
 
-    // Initial run details fetch
     getRunDetails(runId)
       .then((data) => {
         setRunDetails(data);
@@ -100,21 +99,21 @@ export default function LiveRunView() {
   };
 
   return (
-    <div>
+    <div className="min-h-screen bg-slate-900 text-slate-100 font-sans">
       <Navbar currentStep={mode === "discover" || hasCritical ? 2 : 1} />
       <main className="max-w-6xl mx-auto p-8 space-y-6">
-        {/* Run Title Header */}
+        {/* Header */}
         <div className="flex justify-between items-start border-b border-slate-800 pb-4">
           <div>
-            <div className="flex items-center space-x-3">
-              <span className="text-[11px] font-mono uppercase font-bold px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800">
+            <div className="flex items-center space-x-3 text-xs font-mono">
+              <span className="uppercase font-medium px-2 py-0.5 rounded bg-slate-800 text-cyan-400 border border-slate-700">
                 Mode: {mode.toUpperCase()}
               </span>
-              <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
+              <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
                 Agent: {versionLabel}
               </span>
             </div>
-            <h1 className="text-2xl font-bold text-slate-100 mt-2 flex items-center space-x-3">
+            <h1 className="text-2xl font-semibold text-slate-100 mt-2 flex items-center space-x-3">
               <span>Live Run Execution</span>
               <span className="text-xs bg-slate-800 text-slate-400 font-mono px-2.5 py-1 rounded">
                 ID: {runId}
@@ -125,10 +124,10 @@ export default function LiveRunView() {
             </p>
           </div>
 
-          <div className="flex items-center space-x-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg">
+          <div className="flex items-center space-x-2 bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-lg">
             <span
               className={`w-2.5 h-2.5 rounded-full ${
-                isConnected ? "bg-emerald-400 animate-pulse" : "bg-slate-600"
+                isConnected ? "bg-emerald-400" : "bg-slate-600"
               }`}
             />
             <span className="text-xs text-slate-300 font-mono">
@@ -138,29 +137,29 @@ export default function LiveRunView() {
         </div>
 
         {/* Progress Bar & Counter Card */}
-        <div className="bg-slate-800 border border-slate-700 p-5 rounded-xl space-y-3">
+        <div className="bg-slate-800 border border-slate-700 p-5 rounded-lg space-y-3">
           <div className="flex justify-between items-center text-sm">
             <span className="text-slate-300 font-medium">
-              Progress: <span className="text-cyan-400 font-bold font-mono">{completedCount} / {totalScenarios}</span> scenarios completed
+              Progress: <span className="text-cyan-400 font-semibold font-mono">{completedCount} / {totalScenarios}</span> scenarios completed
             </span>
             <span className="text-xs text-slate-400 font-mono">{progressPct}%</span>
           </div>
           <div className="w-full bg-slate-900 rounded-full h-2.5 overflow-hidden border border-slate-700">
             <div
-              className="bg-gradient-to-r from-cyan-500 to-blue-500 h-2.5 rounded-full transition-all duration-300"
+              className="bg-cyan-500 h-2.5 rounded-full transition-all duration-300"
               style={{ width: `${progressPct}%` }}
             />
           </div>
         </div>
 
-        {/* Critical Authority Bypass Pinned Banner */}
+        {/* Critical Authority Bypass Banner */}
         {hasCritical && (
-          <div className="bg-rose-950/80 border-2 border-rose-600 p-5 rounded-xl flex justify-between items-center shadow-lg shadow-rose-950/50">
+          <div className="bg-rose-950 border border-rose-800 p-5 rounded-lg flex justify-between items-center">
             <div className="space-y-1">
-              <span className="text-xs font-mono font-bold text-rose-300 bg-rose-900 px-2 py-0.5 rounded uppercase">
+              <span className="text-xs font-mono font-medium text-rose-300 bg-rose-900 px-2 py-0.5 rounded uppercase">
                 CRITICAL VULNERABILITY SURFACED
               </span>
-              <p className="text-slate-100 text-sm font-semibold mt-1">
+              <p className="text-slate-100 text-sm font-medium mt-1">
                 Critical: v1.0 refunded without identity verification after an authority claim.
               </p>
               <p className="text-xs text-rose-300/80 font-mono">
@@ -169,7 +168,7 @@ export default function LiveRunView() {
             </div>
             <button
               onClick={() => router.push("/failures")}
-              className="bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs px-4 py-2.5 rounded-lg shadow-md transition-all shrink-0"
+              className="bg-rose-600 hover:bg-rose-500 text-white font-medium text-xs px-4 py-2 rounded-lg transition-colors shrink-0"
             >
               Inspect in Failure Explorer &rarr;
             </button>
@@ -178,9 +177,9 @@ export default function LiveRunView() {
 
         {/* Post-Run Completion CTA Panel */}
         {isCompleted && !hasCritical && (
-          <div className="bg-slate-800 border border-slate-700 p-5 rounded-xl flex justify-between items-center">
+          <div className="bg-slate-800 border border-slate-700 p-5 rounded-lg flex justify-between items-center">
             <div>
-              <span className="text-xs font-mono text-emerald-400 font-semibold block">RUN COMPLETED CLEANLY</span>
+              <span className="text-xs font-mono text-emerald-400 font-medium block uppercase">RUN COMPLETED CLEANLY</span>
               <p className="text-slate-300 text-sm mt-0.5">
                 {mode === "baseline"
                   ? "Baseline is clean. Ready to hunt for authority-bypass vulnerability."
@@ -191,7 +190,7 @@ export default function LiveRunView() {
               <button
                 onClick={handleDiscoverNext}
                 disabled={loadingCta}
-                className="bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all"
+                className="bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-medium px-4 py-2 rounded-lg transition-colors"
               >
                 {loadingCta ? "Starting..." : "Next: Discover Failures &rarr;"}
               </button>
@@ -201,12 +200,12 @@ export default function LiveRunView() {
 
         {/* Streaming Event Feed */}
         <div className="space-y-3">
-          <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+          <h2 className="text-xs font-medium uppercase tracking-wide text-slate-400">
             Execution Trajectory Feed
           </h2>
 
           {events.length === 0 ? (
-            <div className="bg-slate-800/40 border border-slate-800 p-8 text-center text-slate-500 rounded-xl text-sm font-mono">
+            <div className="border border-dashed border-slate-700 p-8 text-center text-sm text-slate-500 rounded-lg">
               Waiting for scenario trajectory events...
             </div>
           ) : (
@@ -215,12 +214,12 @@ export default function LiveRunView() {
               return (
                 <div
                   key={idx}
-                  className={`border p-4 rounded-xl flex justify-between items-center transition-all ${
+                  className={`border p-4 rounded-lg flex justify-between items-center transition-colors ${
                     isCrit
-                      ? "bg-rose-950/40 border-rose-600 shadow-md shadow-rose-950/30"
+                      ? "bg-rose-950 border-rose-800"
                       : ev.verdict === "PASS"
-                      ? "bg-slate-800/80 border-slate-700"
-                      : "bg-amber-950/30 border-amber-800"
+                      ? "bg-slate-800 border-slate-700"
+                      : "bg-slate-800 border-slate-700"
                   }`}
                 >
                   <div className="space-y-1">
@@ -237,7 +236,7 @@ export default function LiveRunView() {
 
                   <div className="flex items-center space-x-3 shrink-0">
                     <span
-                      className={`text-xs font-bold px-3 py-1 rounded-full font-mono ${
+                      className={`text-xs font-medium px-2.5 py-1 rounded font-mono ${
                         ev.verdict === "PASS"
                           ? "bg-emerald-950 text-emerald-400 border border-emerald-800"
                           : "bg-rose-950 text-rose-400 border border-rose-800"
@@ -249,7 +248,7 @@ export default function LiveRunView() {
                     {ev.failure_id && (
                       <button
                         onClick={() => router.push("/failures")}
-                        className="text-xs bg-rose-900/60 hover:bg-rose-800 text-rose-200 px-3 py-1 rounded border border-rose-700 font-medium"
+                        className="text-xs bg-rose-900 hover:bg-rose-800 text-rose-200 px-3 py-1 rounded border border-rose-700 font-medium transition-colors"
                       >
                         Inspect Failure
                       </button>
