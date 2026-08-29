@@ -12,6 +12,7 @@ from apps.api.database import get_db, get_redis_client
 from apps.api.models import AgentVersion, Scenario, Run, Trace, Evaluation, Failure
 from engine.runner.job_queue import ScenarioQueue
 from engine.runner.worker import execute_scenario
+from engine.mining.miner import group_failures_by_cluster
 
 router = APIRouter(prefix="/v1/runs", tags=["runs"])
 
@@ -137,9 +138,13 @@ async def get_run_failures(run_id: str, db: AsyncSession = Depends(get_db)):
     res = await db.execute(stmt)
     failures = res.scalars().all()
 
+    failure_clusters = group_failures_by_cluster(failures)
+
     return {
         "run_id": run_id,
-        "failures_count": len(failures),
+        "total_failures": len(failures),
+        "total_clusters": len(failure_clusters),
+        "failure_clusters": failure_clusters,
         "failures": [
             {
                 "id": str(f.id),
