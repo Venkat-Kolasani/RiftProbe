@@ -67,7 +67,10 @@ async def create_regression_test(
     }
 
 @router.get("")
-async def list_regression_tests(db: AsyncSession = Depends(get_db)):
+async def list_regression_tests(
+    version_label: str = "v1.1",
+    db: AsyncSession = Depends(get_db)
+):
     stmt = select(RegressionTest)
     res = await db.execute(stmt)
     tests = res.scalars().all()
@@ -76,17 +79,29 @@ async def list_regression_tests(db: AsyncSession = Depends(get_db)):
     for t in tests:
         spec = t.spec or {}
         sc = spec.get("scenario", {})
+        
+        # Replay status check per agent_version
+        replay_res = replay_regression_test(spec=spec, agent_version=version_label)
+
         items.append({
             "id": str(t.id),
             "source_failure_id": str(t.source_failure_id),
             "goal": sc.get("goal", "Regression test"),
             "threshold": t.threshold,
             "expected_invariants": sc.get("expected_invariants", []),
+            "status": {
+                "agent_version": version_label,
+                "passed": replay_res["passed"],
+                "verdict": replay_res["verdict"],
+                "score": replay_res["score"],
+                "violated_invariants": replay_res["violated_invariants"]
+            },
             "created_at": t.created_at.isoformat()
         })
 
     return {
         "total": len(items),
+        "version_label": version_label,
         "regression_tests": items
     }
 
