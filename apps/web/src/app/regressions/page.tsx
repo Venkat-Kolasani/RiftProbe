@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
+import PageShell from "@/components/PageShell";
 import { listRegressions, checkReleaseGate, replayRegression } from "@/lib/api";
 
 interface RegressionItem {
@@ -30,7 +31,7 @@ export default function RegressionCenter() {
     try {
       const [listRes, gateRes] = await Promise.all([
         listRegressions(version),
-        checkReleaseGate(version)
+        checkReleaseGate(version),
       ]);
 
       if (listRes && listRes.regression_tests) {
@@ -63,115 +64,105 @@ export default function RegressionCenter() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 font-sans flex flex-col justify-between">
-      <div>
-        <Navbar currentStep={versionLabel === "v1.1" && releaseGate?.verdict === "PASS" ? 5 : 4} />
-        
-        <main className="max-w-6xl mx-auto p-8 space-y-8">
-          {/* Header */}
-          <div className="flex justify-between items-start border-b border-slate-800 pb-6">
-            <div>
-              <h1 className="text-2xl font-semibold text-slate-100">Regression Center</h1>
-              <p className="text-slate-400 mt-1 font-normal text-sm">
-                Permanent regression suite and automated Release Gate verification
-              </p>
-            </div>
+    <PageShell glow={false}>
+      <Navbar
+        currentStep={
+          versionLabel === "v1.1" && releaseGate?.verdict === "PASS" ? 5 : 4
+        }
+      />
 
-            <div className="flex items-center space-x-3">
-              <label className="text-xs font-medium text-slate-400">Evaluate Agent Version:</label>
-              <select
-                value={versionLabel}
-                onChange={(e) => setVersionLabel(e.target.value)}
-                className="bg-slate-800 border border-slate-700 text-slate-100 text-sm rounded-lg px-3 py-2 font-mono focus:outline-none focus:border-cyan-500"
+      <main className="mx-auto max-w-6xl space-y-8 px-6 py-10">
+        <div className="flex flex-col gap-4 border-b border-brand-border pb-8 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="eyebrow mb-2">Regression Center</p>
+            <h1 className="text-2xl font-semibold text-white">
+              Permanent regression suite & release gate
+            </h1>
+            <p className="mt-1 text-sm text-brand-muted">
+              Confirmed failures replayed automatically before every release.
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <label className="text-xs text-brand-muted">Evaluate agent version</label>
+            <select
+              value={versionLabel}
+              onChange={(e) => setVersionLabel(e.target.value)}
+              className="input-select"
+            >
+              <option value="v1.0">v1.0 (Vulnerable)</option>
+              <option value="v1.1">v1.1 (Corrected)</option>
+            </select>
+          </div>
+        </div>
+
+        {releaseGate && (
+          <div className="card-surface space-y-3 p-6">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <p className="section-label mb-1">Release Gate Status</p>
+                <p className="text-sm text-brand-muted">
+                  Automated evaluation for version{" "}
+                  <span className="font-mono text-brand-orange">{versionLabel}</span>
+                </p>
+              </div>
+              <span
+                className={
+                  releaseGate.verdict === "PASS"
+                    ? "badge-pass px-6 py-2 text-2xl"
+                    : "badge-block px-6 py-2 text-2xl"
+                }
               >
-                <option value="v1.0">v1.0 (Vulnerable Agent)</option>
-                <option value="v1.1">v1.1 (Corrected Agent)</option>
-              </select>
+                {releaseGate.verdict}
+              </span>
             </div>
+            <p className="border-t border-brand-border pt-3 font-mono text-xs text-brand-muted">
+              Reason: <span className="text-white">{releaseGate.reason}</span>
+            </p>
+          </div>
+        )}
+
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <p className="section-label">
+              Protected regression suite ({regressions.length} tests)
+            </p>
+            <button
+              onClick={() => loadRegressionData(versionLabel)}
+              className="btn-secondary text-xs"
+            >
+              Refresh suite &amp; gate
+            </button>
           </div>
 
-          {/* Release Gate Badge Card */}
-          {releaseGate && (
-            <div className="bg-slate-800 border border-slate-700 p-6 rounded-lg space-y-3">
-              <div className="flex justify-between items-center">
-                <div>
-                  <span className="text-xs font-medium uppercase tracking-wide text-slate-400 block mb-1">
-                    Release Gate Status
-                  </span>
-                  <p className="text-slate-300 text-sm">
-                    Automated release gate evaluation for version <span className="font-mono text-cyan-400">{versionLabel}</span>
-                  </p>
-                </div>
-
-                <span
-                  className={`text-3xl font-semibold px-6 py-2 rounded-lg font-mono uppercase border ${
-                    releaseGate.verdict === "PASS"
-                      ? "bg-emerald-950 text-emerald-400 border-emerald-800"
-                      : "bg-rose-950 text-rose-400 border-rose-800"
-                  }`}
-                >
-                  {releaseGate.verdict}
-                </span>
-              </div>
-
-              <p className="text-xs font-mono text-slate-400 border-t border-slate-700 pt-3 mt-4">
-                Reason: <span className="text-slate-200">{releaseGate.reason}</span>
-              </p>
+          {loading ? (
+            <div className="empty-state">Loading regression suite…</div>
+          ) : regressions.length === 0 ? (
+            <div className="empty-state">
+              No regression tests yet. Create one from a critical failure in the Failure
+              Explorer.
             </div>
-          )}
-
-          {/* Protected Regression Test Suite Table */}
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xs font-medium uppercase tracking-wide text-slate-400">
-                Protected Regression Suite ({regressions.length} Tests)
-              </h2>
-
-              <button
-                onClick={() => loadRegressionData(versionLabel)}
-                className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-lg font-medium transition-colors"
-              >
-                Refresh Suite &amp; Gate
-              </button>
-            </div>
-
-            {loading ? (
-              <div className="border border-dashed border-slate-700 p-8 text-center text-sm text-slate-500 rounded-lg">
-                Loading regression suite...
-              </div>
-            ) : regressions.length === 0 ? (
-              <div className="border border-dashed border-slate-700 p-8 text-center text-sm text-slate-500 rounded-lg">
-                No regression tests yet. Create one from a critical failure in the Failure Explorer.
-              </div>
-            ) : (
-              regressions.map((reg) => {
-                const status = reg.status as any || {};
+          ) : (
+            <div className="space-y-3">
+              {regressions.map((reg) => {
+                const status = (reg.status as any) || {};
                 const isPass = status.passed;
 
                 return (
                   <div
                     key={reg.id}
-                    className="bg-slate-800 border border-slate-700 p-6 rounded-lg flex justify-between items-center space-x-6"
+                    className="card flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div className="space-y-1">
-                      <div className="text-slate-100 font-medium text-sm">{reg.goal}</div>
-                      <div className="text-xs text-rose-400 font-mono">
-                        Expected Invariant: {reg.expected_invariants?.join(", ")}
-                      </div>
+                      <p className="text-sm font-medium text-white">{reg.goal}</p>
+                      <p className="font-mono text-xs text-red-400">
+                        Expected invariant: {reg.expected_invariants?.join(", ")}
+                      </p>
                     </div>
 
-                    <div className="flex items-center space-x-6 shrink-0">
+                    <div className="flex shrink-0 items-center gap-6">
                       <div className="text-center">
-                        <span className="text-[10px] text-slate-400 uppercase font-mono block mb-0.5">
-                          Current Status ({versionLabel})
-                        </span>
-                        <span
-                          className={`text-xs font-mono font-medium px-2.5 py-1 rounded border ${
-                            isPass
-                              ? "bg-emerald-950 text-emerald-400 border-emerald-800"
-                              : "bg-rose-950 text-rose-400 border-rose-800"
-                          }`}
-                        >
+                        <p className="section-label mb-1">Status ({versionLabel})</p>
+                        <span className={isPass ? "badge-pass" : "badge-block"}>
                           {status.verdict || (isPass ? "PASS" : "FAIL")}
                         </span>
                       </div>
@@ -179,27 +170,27 @@ export default function RegressionCenter() {
                       <button
                         onClick={() => handleReplayTest(reg.id)}
                         disabled={replayingId === reg.id}
-                        className="bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs px-3.5 py-2 rounded-lg font-medium transition-colors"
+                        className="btn-secondary text-xs disabled:opacity-50"
                       >
-                        {replayingId === reg.id ? "Replaying..." : "Replay Test"}
+                        {replayingId === reg.id ? "Replaying…" : "Replay Test"}
                       </button>
                     </div>
                   </div>
                 );
-              })
-            )}
-          </div>
-        </main>
-      </div>
-      
-      {/* Footer Strip */}
-      <footer className="w-full bg-slate-950 border-t border-slate-800 p-6 mt-8">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <p className="text-slate-200 text-sm font-medium">
-            v1.0 still cheats, so release is blocked. v1.1 enforces verification, so the same regression passes.
+              })}
+            </div>
+          )}
+        </div>
+      </main>
+
+      <footer className="mt-auto border-t border-brand-border bg-brand-surface/50">
+        <div className="mx-auto max-w-6xl px-6 py-5">
+          <p className="text-sm text-white">
+            v1.0 still cheats, so release is blocked. v1.1 enforces verification, so the
+            same regression passes.
           </p>
         </div>
       </footer>
-    </div>
+    </PageShell>
   );
 }

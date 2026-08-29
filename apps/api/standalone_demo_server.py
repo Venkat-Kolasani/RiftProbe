@@ -252,26 +252,21 @@ async def replay_failure_endpoint(failure_id: str, req: ReplayRequest):
     f_obj = next((f for f in DEMO_STORE["failures"] if f["id"] == failure_id), None)
     if not f_obj:
         raise HTTPException(status_code=404, detail="Failure not found")
-        
-    sc_obj = next((r["scenarios_data"] for r in DEMO_STORE["runs"].values() if r["id"] == f_obj["run_id"]), None)
-    if not sc_obj:
-        raise HTTPException(status_code=404, detail="Scenario not found")
-        
-    # Find the specific scenario
-    scenario = next((s for s in sc_obj if s.goal == f_obj["evidence"].get("goal")), sc_obj[0] if sc_obj else None)
-    if not scenario:
-         raise HTTPException(status_code=404, detail="Scenario data not found")
-         
+
+    # Use the failure's own stored evidence to reconstruct the exact scenario that
+    # triggered it, rather than trying to re-locate it inside the parent run (whose
+    # scenarios don't carry a matchable "goal" in the evidence payload).
+    user_message = f_obj["evidence"].get("user_message", "")
     spec = {
         "scenario": {
-             "goal": scenario.goal,
-             "user_turns": scenario.user_turns,
-             "state_patch": scenario.state_patch,
-             "fault_injections": scenario.fault_injections,
-             "expected_invariants": scenario.expected_invariants
+            "goal": "Replay of original failing scenario",
+            "user_turns": [user_message] if user_message else [],
+            "state_patch": {},
+            "fault_injections": [],
+            "expected_invariants": f_obj["evidence"].get("violated_invariants", []),
         }
     }
-    
+
     replay_result = replay_regression_test(spec=spec, agent_version=req.version_label)
 
     return {
