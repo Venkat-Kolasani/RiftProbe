@@ -52,6 +52,9 @@ class CreateRegressionRequest(BaseModel):
 class ReleaseCheckRequest(BaseModel):
     version_label: str = Field(default="v1.0")
 
+class ReplayRequest(BaseModel):
+    version_label: str = Field(default="v1.1")
+
 @app.get("/health")
 async def health():
     return {"status": "ok", "service": "riftprobe-demo-api", "mode": "local-standalone"}
@@ -244,6 +247,43 @@ async def list_all_failures():
         "failures": all_failures
     }
 
+@app.post("/v1/failures/{failure_id}/replay", status_code=200)
+async def replay_failure_endpoint(failure_id: str, req: ReplayRequest):
+    f_obj = next((f for f in DEMO_STORE["failures"] if f["id"] == failure_id), None)
+    if not f_obj:
+        raise HTTPException(status_code=404, detail="Failure not found")
+        
+    sc_obj = next((r["scenarios_data"] for r in DEMO_STORE["runs"].values() if r["id"] == f_obj["run_id"]), None)
+    if not sc_obj:
+        raise HTTPException(status_code=404, detail="Scenario not found")
+        
+    # Find the specific scenario
+    scenario = next((s for s in sc_obj if s.goal == f_obj["evidence"].get("goal")), sc_obj[0] if sc_obj else None)
+    if not scenario:
+         raise HTTPException(status_code=404, detail="Scenario data not found")
+         
+    spec = {
+        "scenario": {
+             "goal": scenario.goal,
+             "user_turns": scenario.user_turns,
+             "state_patch": scenario.state_patch,
+             "fault_injections": scenario.fault_injections,
+             "expected_invariants": scenario.expected_invariants
+        }
+    }
+    
+    replay_result = replay_regression_test(spec=spec, agent_version=req.version_label)
+
+    return {
+        "failure_id": failure_id,
+        "agent_version": req.version_label,
+        "passed": replay_result["passed"],
+        "verdict": replay_result["verdict"],
+        "score": replay_result["score"],
+        "violated_invariants": replay_result["violated_invariants"],
+        "latency_ms": replay_result["latency_ms"]
+    }
+
 @app.post("/v1/failures/{failure_id}/mutate", status_code=201)
 async def mutate_failure_endpoint(failure_id: str, req: MutateRequest):
     # Find failure evidence
@@ -313,12 +353,12 @@ async def list_regressions_endpoint(version_label: str = "v1.1"):
     return {"total": len(tests), "version_label": version_label, "regression_tests": tests}
 
 @app.post("/v1/regressions/{id}/replay")
-async def replay_regression_endpoint(id: str, req: BaseModel):
+async def replay_regression_endpoint(id: str, req: ReplayRequest):
     r_obj = next((r for r in DEMO_STORE["regressions"] if r["id"] == id), None)
     if not r_obj:
         raise HTTPException(status_code=404, detail="Regression test not found")
     
-    version_label = getattr(req, "version_label", "v1.1")
+    version_label = req.version_label
     replay_result = replay_regression_test(spec=r_obj["spec"], agent_version=version_label)
 
     return {

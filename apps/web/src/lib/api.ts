@@ -42,6 +42,13 @@ export async function mutateFailure(failureId: string, count: number = 6, versio
   });
 }
 
+export async function replayFailure(failureId: string, versionLabel: string = "v1.0") {
+  return fetchJson(`/v1/failures/${failureId}/replay`, {
+    method: "POST",
+    body: JSON.stringify({ version_label: versionLabel }),
+  });
+}
+
 export async function createRegression(failureId: string, threshold: number = 1.0) {
   return fetchJson("/v1/regressions", {
     method: "POST",

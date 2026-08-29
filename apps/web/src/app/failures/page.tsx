@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import PageShell from "@/components/PageShell";
-import { listAllFailures, mutateFailure, createRegression, replayRegression } from "@/lib/api";
+import { listAllFailures, mutateFailure, createRegression, replayFailure } from "@/lib/api";
 import { useRouter } from "next/navigation";
 
 export default function FailureExplorer() {
@@ -32,7 +32,7 @@ export default function FailureExplorer() {
   const handleReplay = async (failureId: string) => {
     setActionLoading(`replay_${failureId}`);
     try {
-      const res = await replayRegression(failureId, "v1.0");
+      const res = await replayFailure(failureId, "v1.0");
       setReplayResults((prev) => ({ ...prev, [failureId]: res }));
     } catch (e: any) {
       alert(`Replay error: ${e.message}`);
