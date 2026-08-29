@@ -6,16 +6,21 @@ export async function fetchJson(path: string, options?: RequestInit) {
     ...options,
   });
   if (!res.ok) {
-    throw new Error(`API error ${res.status}: ${res.statusText}`);
+    const errText = await res.text();
+    throw new Error(`API error ${res.status}: ${errText}`);
   }
   return res.json();
 }
 
-export async function createRun(versionLabel: string = "v1.0") {
+export async function createRun(versionLabel: string = "v1.0", mode: string = "baseline") {
   return fetchJson("/v1/runs", {
     method: "POST",
-    body: JSON.stringify({ version_label: versionLabel }),
+    body: JSON.stringify({ version_label: versionLabel, mode }),
   });
+}
+
+export async function listRuns() {
+  return fetchJson("/v1/runs");
 }
 
 export async function getRunDetails(runId: string) {
@@ -24,6 +29,10 @@ export async function getRunDetails(runId: string) {
 
 export async function getRunFailures(runId: string) {
   return fetchJson(`/v1/runs/${runId}/failures`);
+}
+
+export async function listAllFailures() {
+  return fetchJson("/v1/failures");
 }
 
 export async function mutateFailure(failureId: string, count: number = 6, versionLabel: string = "v1.0") {

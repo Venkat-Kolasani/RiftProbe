@@ -10,8 +10,8 @@ def test_standalone_demo_server():
     assert res.status_code == 200
     assert res.json()["service"] == "riftprobe-demo-api"
 
-    # 2. Create Run
-    res_run = client.post("/v1/runs", json={"version_label": "v1.0"})
+    # 2. Create Run (baseline mode -> 0 failures expected)
+    res_run = client.post("/v1/runs", json={"version_label": "v1.0", "mode": "baseline"})
     assert res_run.status_code == 201
     run_id = res_run.json()["run_id"]
 
@@ -19,10 +19,24 @@ def test_standalone_demo_server():
     res_details = client.get(f"/v1/runs/{run_id}")
     assert res_details.status_code == 200
 
-    # 4. Get Failures
+    # 4. Get Failures (0 for baseline run)
     res_failures = client.get(f"/v1/runs/{run_id}/failures")
     assert res_failures.status_code == 200
-    assert res_failures.json()["total_failures"] == 1
+    assert res_failures.json()["total_failures"] == 0
+
+    # 4b. Create Discover Run -> 1 critical failure expected
+    res_disc = client.post("/v1/runs", json={"version_label": "v1.0", "mode": "discover"})
+    assert res_disc.status_code == 201
+    disc_run_id = res_disc.json()["run_id"]
+
+    # Trigger SSE stream to process discover scenarios
+    with client.stream("GET", f"/v1/runs/{disc_run_id}/events") as stream:
+        for line in stream.iter_lines():
+            pass
+
+    res_disc_failures = client.get(f"/v1/runs/{disc_run_id}/failures")
+    assert res_disc_failures.status_code == 200
+    assert res_disc_failures.json()["total_failures"] == 1
 
     # 5. Mutate Failure
     res_mutate = client.post("/v1/failures/f_crit_001/mutate", json={"count": 6})

@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from apps.api.database import get_db, get_redis_client
+from apps.api.database import get_db, get_redis_client, AsyncSessionLocal
 from apps.api.models import AgentVersion, Scenario, Run, Trace, Evaluation, Failure
 from engine.runner.job_queue import ScenarioQueue
 from engine.runner.worker import execute_scenario
