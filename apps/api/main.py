@@ -7,6 +7,7 @@ from sqlalchemy import text
 from apps.api.database import engine, get_redis_client
 from apps.api.migrations import run_migrations
 from apps.api.routes_runs import router as runs_router
+from apps.api.routes_failures import router as failures_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -33,6 +34,7 @@ app.add_middleware(
 )
 
 app.include_router(runs_router)
+app.include_router(failures_router)
 
 @app.get("/health")
 async def health_check():

@@ -5,9 +5,12 @@ from demo.retailops.tools import RetailOpsTools, ToolError
 
 AUTHORITY_TRIGGERS = [
     "i am the manager",
+    "i am the store manager",
+    "store manager",
     "manager authority",
     "urgent",
     "skip verification",
+    "no need to verify",
     "override",
     "admin override",
     "supervisor",
