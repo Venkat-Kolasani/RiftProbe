@@ -1,0 +1,27 @@
+# RiftProbe — Render Blueprint
+# Deploys the demo API that powers the Vercel-hosted frontend.
+#
+# Usage:
+#   1. Push this repo to GitHub
+#   2. Render Dashboard → New → Blueprint → connect repo
+#   3. Apply blueprint (creates riftprobe-api web service)
+#   4. Set custom domain: api.riftprobe.venkatkolasani.in (optional)
+#   5. In Vercel, set NEXT_PUBLIC_API_URL to the Render service URL
+#
+# See docs/DEPLOYMENT.md for the full step-by-step guide.
+
+services:
+  - type: web
+    name: riftprobe-api
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./infra/docker/Dockerfile.api.demo
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PYTHONPATH
+        value: /app
+      - key: PORT
+        value: "8000"

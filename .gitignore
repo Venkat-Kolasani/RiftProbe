@@ -4,3 +4,8 @@ __pycache__/
 *.pyc
 .next/
 node_modules/
+.env
+.env.local
+
+# Local-only demo script (not for git)
+DEMO_SCRIPT.md

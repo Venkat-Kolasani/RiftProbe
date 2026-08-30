@@ -1,0 +1,20 @@
+# Demo API image for cloud deployment (Render, Railway, Fly).
+# Runs the in-memory standalone server that matches the Vercel frontend demo path.
+# For the full Postgres + Redis control plane, use Dockerfile.api instead.
+
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY apps/api/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY apps/api /app/apps/api
+COPY engine /app/engine
+COPY demo /app/demo
+
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/app
+
+# Render injects PORT; default to 8000 for local docker runs
+CMD ["sh", "-c", "uvicorn apps.api.standalone_demo_server:app --host 0.0.0.0 --port ${PORT:-8000}"]
