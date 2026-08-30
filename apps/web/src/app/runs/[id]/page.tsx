@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import PageShell from "@/components/PageShell";
-import { getRunDetails, createRun } from "@/lib/api";
+import { getRunDetails, createRun, getApiBase } from "@/lib/api";
 
 interface EventItem {
   event_type?: string;
@@ -42,8 +42,7 @@ export default function LiveRunView() {
       })
       .catch(() => {});
 
-    const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-    const eventSource = new EventSource(`${apiBase}/v1/runs/${runId}/events`);
+    const eventSource = new EventSource(`${getApiBase()}/v1/runs/${runId}/events`);
 
     eventSource.onopen = () => setIsConnected(true);
 

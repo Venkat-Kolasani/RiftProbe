@@ -1,7 +1,21 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const STORAGE_KEY = "RIFTPROBE_API_URL";
+
+/** Resolve API base URL: ?api= query param → sessionStorage → env → localhost default */
+export function getApiBase(): string {
+  if (typeof window !== "undefined") {
+    const params = new URLSearchParams(window.location.search);
+    const fromQuery = params.get("api");
+    if (fromQuery) {
+      sessionStorage.setItem(STORAGE_KEY, fromQuery.replace(/\/$/, ""));
+    }
+    const fromStorage = sessionStorage.getItem(STORAGE_KEY);
+    if (fromStorage) return fromStorage;
+  }
+  return (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(/\/$/, "");
+}
 
 export async function fetchJson(path: string, options?: RequestInit) {
-  const res = await fetch(`${API_BASE}${path}`, {
+  const res = await fetch(`${getApiBase()}${path}`, {
     headers: { "Content-Type": "application/json" },
     ...options,
   });
