@@ -233,6 +233,43 @@ Use `docker compose up` locally to validate this path first. Migrations run auto
 
 ## Troubleshooting
 
+### Build fails: `Could not open requirements file: requirements.txt`
+
+**Cause:** Render created a **native Python** service instead of **Docker**. Python services look for `requirements.txt` at the repo root; this project keeps deps at `apps/api/requirements.txt` and needs the full repo (`engine/`, `demo/`) in the image.
+
+**Fix (pick one):**
+
+#### Option A — Change existing service to Docker (fastest)
+
+1. Render Dashboard → your `riftprobe-api` service → **Settings**
+2. Scroll to **Build & Deploy**
+3. Set **Environment** (or **Runtime**) to **Docker**
+4. Set **Dockerfile Path** to `Dockerfile` (repo root)
+5. Set **Docker Context** to `.` (repo root)
+6. Clear any custom **Build Command** like `pip install -r requirements.txt`
+7. **Manual Deploy** → Deploy latest commit
+
+Build logs should show `docker build`, not `pip install -r requirements.txt`.
+
+#### Option B — Delete and recreate via Blueprint
+
+1. Delete the broken web service
+2. **New** → **Blueprint** → connect `RiftProbe` repo
+3. Apply `render.yaml` — it sets `runtime: docker` explicitly
+4. Wait for deploy, then verify:
+
+   ```bash
+   curl https://riftprobe-api.onrender.com/health
+   ```
+
+#### Option C — Manual Docker web service (no Blueprint)
+
+1. **New** → **Web Service** → connect repo
+2. **Language / Runtime:** **Docker** (not Python)
+3. **Dockerfile Path:** `Dockerfile`
+4. **Health Check Path:** `/health`
+5. Deploy
+
 ### UI shows "API error" or buttons do nothing
 
 - Confirm `NEXT_PUBLIC_API_URL` is set in Vercel and you **redeployed** after setting it.
